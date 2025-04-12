@@ -381,50 +381,42 @@ export function GameScreen() {
   const [chatHistory, setChatHistory] = useState([]);
   const chatHistoryRef = useRef(null); // Ref for scrolling chat history
   const alienImages = [abstract, cuboid, maw, red, starsmile, triocular];
-  // Select and set alien image once per mount
   const [currentAlienImage] = useState(() => alienImages[Math.floor(Math.random() * alienImages.length)]);
-  const [emotions, setEmotions] = useState([]); // State for emotions
+  const [emotions, setEmotions] = useState([]);
 
   
-  // Function to scroll chat history to the bottom
+  //run on start
   useEffect(() => {
     if (chatHistoryRef.current) {
       chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
     }
-  }, [chatHistory]); // Run whenever chatHistory changes
+  }, [chatHistory]); 
 
   useEffect(() => {
-    // Define the system prompt containing the core instructions for the AI
-  
     const systemPrompt = `You are an alien with the following emotions ${alienDetails.emotions}. You have the following tone: ${alienDetails.tone}, so speak in that way. Act like you are speaking to them or making an action towards them, and discard all other parts of your response. Do not break character under any circumstance. Contextualize to the best of your ability. Remember not to respond like you are narrating your own thoughts, so don't respond like 'I approach cautiously', etc. Respond in 1 to 2 sentences. Don't use any emojis. You should talk like a normal human being, and not refer to yourself as you. Simply say what a regular person would say. Say your trust level from 0 to 1 with 0 as low. Avoid talking only about the human's emotion. Also, don't describe yourself in intricate detail randomly. Do this for every response following this.`;
 
-    // Define the initial user message to kick off the conversation
     const initialUserMessage = "You encounter another being upon landing. What is your initial reaction?";
 
     // Clear local history and add a system message indicating the start/continuation
     setChatHistory([{ sender: 'system', content: `Encountering ${alienName}` }]);
-    setAlienDialogue("Connecting..."); // Initial loading state
+    setAlienDialogue("Connecting..."); // the start loading state :)
 
     // Fetch the first response from the backend, providing both the initial user message
-    // and the system prompt containing the AI's instructions.
-    // The backend uses the session cookie to manage the conversation state.
-    fetchReply(initialUserMessage, systemPrompt) // Pass systemPrompt here
+   
+    fetchReply(initialUserMessage, systemPrompt) //system prompt here HOORAY! except it doesnt really matter.
       .then(reply => {
         
          tempTrust = reply.slice(-5)
          tempTrust = tempTrust.slice(1,4)
-        const trimmed = reply.slice(0,-10)
-        setAlienDialogue(reply); // Update dialogue state (optional now)
-        // Add alien's response to chat history
-        setChatHistory(prev => [...prev, { sender: 'alien', content: reply }]);
-        // Generate initial emotion response options
+        const trimmed = reply.slice(0,-5)
+        setAlienDialogue(trimmed);
+        setChatHistory(prev => [...prev, { sender: 'alien', content: trimmed }]);
         setResponses(generateEmotionResponses());
       })
       .catch(error => {
         console.error("Error initializing/continuing conversation:", error);
         setAlienDialogue("*The alien seems unresponsive due to a connection issue.*");
         setChatHistory(prev => [...prev, { sender: 'system', content: "Error connecting to alien translator." }]);
-        // Still provide fallback responses
         setResponses(generateEmotionResponses());
       });
 
@@ -521,29 +513,27 @@ export function GameScreen() {
               gap: '0.5rem' 
             }}
           >
-            {/* Map through chat history */}
             {chatHistory.map((msg, idx) => (
               <div
                 key={idx}
                 style={{
                   textAlign: msg.sender === 'player' ? 'right' : 'left',
-                  padding: '0.6rem 0.9rem', // Adjusted padding
+                  padding: '0.6rem 0.9rem',
                   backgroundColor: msg.sender === 'system'
-                    ? 'rgba(120, 120, 120, 0.5)' // System message color
+                    ? 'rgba(120, 120, 120, 0.5)' 
                     : (msg.sender === 'player' ? 'rgba(70, 130, 190, 0.7)' : 'rgba(190, 130, 70, 0.7)'), // Player/Alien colors
-                  borderRadius: '10px', // More rounded corners
+                  borderRadius: '10px', 
                   fontSize: msg.sender === 'system' ? '0.9rem' : '1rem',
                   fontStyle: msg.sender === 'system' ? 'italic' : 'normal',
-                  color: msg.sender === 'system' ? '#ccc' : 'white', // System text color
+                  color: msg.sender === 'system' ? '#ccc' : 'white',
                   alignSelf: msg.sender === 'player' ? 'flex-end' : 'flex-start',
-                  maxWidth: '75%', // Prevent messages from taking full width
-                  wordWrap: 'break-word' // Ensure long words break
+                  maxWidth: '75%', 
+                  wordWrap: 'break-word' 
                 }}
               >
                 {msg.content}
               </div>
             ))}
-             {/* Display loading indicator if alienDialogue is '...' */}
              {alienDialogue === "..." && (
                 <div style={{ fontStyle: 'italic', color: '#aaa', alignSelf: 'center', padding: '0.5rem' }}>Alien is thinking...</div>
              )}
@@ -553,7 +543,6 @@ export function GameScreen() {
              </div>
              <br></br>
              <br></br>
-          {/* Emotion response options - improved styling */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", flexDirection: "row", gap: "0.8rem", width: "70%", maxWidth: '500px' }}>
             {responses.map((response, index) => (
               <button
@@ -614,22 +603,7 @@ export function GameScreen() {
           }}
           >Clear Emotions</button>
           </div>
-          {/* Navigation button */}
-          <button
-            onClick={() => navigate("/")} // Consider if resetConversation should be called here
-            style={{
-              marginTop: "2rem",
-              backgroundColor: "transparent",
-              border: "1px solid white",
-              borderRadius: "8px",
-              color: "white",
-              padding: "0.6rem 0.8rem", // Adjusted padding
-              fontSize: "0.9rem",
-              cursor: 'pointer'
-            }}
-          >
-            Return to Ship
-          </button>
+         
         </header>
       </div>
     </div>
@@ -639,11 +613,11 @@ export function GameScreen() {
 
 export function EndScreen() {
   const navigate = useNavigate();
-  const aliensHelping =  0;
+  var aliensHelping =  0;
   function loopTrust(){
     for (let i = 0; i < trustArray.length; i++){
-      const trust = Number(trustArray[i])
-      if(Math.random() > trust){
+      var trust = Number(trustArray[i])
+      if(Math.random() <= trust){
        aliensHelping++
       }
     }
