@@ -19,7 +19,8 @@ export async function fetchReply(message, systemPrompt = null) {
 
     const requestBody = {
         message: message,
-        conversation_id: conversationId
+        conversation_id: conversationId,
+        system_prompt: systemPrompt
     };
 
     // Add system_prompt to the body if it's provided

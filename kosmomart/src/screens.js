@@ -369,7 +369,8 @@ export function EncounterScreen() {
   );
 }
 var responseCount = 0;
-
+var trustArray = []
+var tempTrust = ""
 export function GameScreen() {
   const navigate = useNavigate();
   // Generate alien details once per component mount
@@ -409,6 +410,10 @@ export function GameScreen() {
     // The backend uses the session cookie to manage the conversation state.
     fetchReply(initialUserMessage, systemPrompt) // Pass systemPrompt here
       .then(reply => {
+        
+         tempTrust = reply.slice(-5)
+         tempTrust = tempTrust.slice(1,4)
+        const trimmed = reply.slice(0,-10)
         setAlienDialogue(reply); // Update dialogue state (optional now)
         // Add alien's response to chat history
         setChatHistory(prev => [...prev, { sender: 'alien', content: reply }]);
@@ -440,6 +445,10 @@ export function GameScreen() {
 
   function clearEmotions(){
     setEmotions([]);
+  }
+
+  function parseEmotions(){
+    return emotions.join(", ");
   }
   // Handle player response selection (updated error handling and state updates)
   const handleResponseSelect = (response) => {
@@ -477,6 +486,8 @@ export function GameScreen() {
         navigate("/encounter")
         setAlienDetails(generateEncounter())
         responseCount = 0;
+        trustArray.push(tempTrust)
+        tempTrust = ""
       }
     }
   };
@@ -571,7 +582,7 @@ export function GameScreen() {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", flexDirection: "row", gap: "0.5rem", width: "90%", maxWidth: '700px' }}>
           <button
-          onClick ={() =>  handleResponseSelect(emotions)}
+          onClick ={() =>  handleResponseSelect(parseEmotions())}
           style={{
             backgroundColor: "rgba(255, 255, 255, 0.08)",
             border: "1px solid rgba(255, 255, 255, 0.6)",
@@ -628,7 +639,24 @@ export function GameScreen() {
 
 export function EndScreen() {
   const navigate = useNavigate();
-
+  const aliensHelping =  0;
+  function loopTrust(){
+    for (let i = 0; i < trustArray.length; i++){
+      const trust = Number(trustArray[i])
+      if(Math.random() > trust){
+       aliensHelping++
+      }
+    }
+    if(aliensHelping == 3){
+      return "Your flawless diplomacy has the potential to save Earth. Well done"
+    }else if(aliensHelping == 2){
+      return "Your diplomacy was ok, and can probably save Earth. Key word is probably."
+    }else if(aliensHelping == 1){
+      return "Your diplomacy was bad, and Earth is most likely doomed. On the upside, you made one friend."
+    }else if(aliensHelping == 0){
+      return "Your interactions with aliens might have led to more Earth hating aliens...stay out of space."
+    }
+  }
   return (
     <>
     <StarryBackground />
@@ -636,7 +664,7 @@ export function EndScreen() {
     <div className="App">
       <header className="App-header">
         <h2>
-          {}
+          {loopTrust()}
         </h2>
         <br />
         <button
