@@ -315,10 +315,14 @@ export function TutorialScreen() {
     </>
   );
 }
+var numberOfAliens = 0;
 
 export function EncounterScreen() {
   const navigate = useNavigate();
-
+  function navToGame(){
+    navigate("/game")
+    numberOfAliens++
+  }
   function randomEncounterText(){
     const texts = [
       "A ship lands on the station.",
@@ -346,7 +350,7 @@ export function EncounterScreen() {
         </h2>
         <br />
         <button
-          onClick={() => navigate("/game")}
+          onClick={() => navToGame()}
           style={{
             background: "transparent",
             border: "none",
@@ -364,11 +368,12 @@ export function EncounterScreen() {
     </>
   );
 }
+var responseCount = 0;
 
 export function GameScreen() {
   const navigate = useNavigate();
   // Generate alien details once per component mount
-  const [alienDetails] = useState(() => generateEncounter());
+  const [alienDetails, setAlienDetails] = useState(() => generateEncounter());
   const alienName = alienDetails.name.replace("_", " ") + " ";
   const [alienDialogue, setAlienDialogue] = useState("..."); // Keep for potential loading state
   const [responses, setResponses] = useState([]);
@@ -377,7 +382,9 @@ export function GameScreen() {
   const alienImages = [abstract, cuboid, maw, red, starsmile, triocular];
   // Select and set alien image once per mount
   const [currentAlienImage] = useState(() => alienImages[Math.floor(Math.random() * alienImages.length)]);
+  const [emotions, setEmotions] = useState([]); // State for emotions
 
+  
   // Function to scroll chat history to the bottom
   useEffect(() => {
     if (chatHistoryRef.current) {
@@ -387,6 +394,7 @@ export function GameScreen() {
 
   useEffect(() => {
     // Define the system prompt containing the core instructions for the AI
+  
     const systemPrompt = `You are an alien with the following emotions ${alienDetails.emotions}. You have the following tone: ${alienDetails.tone}, so speak in that way. Act like you are speaking to them or making an action towards them, and discard all other parts of your response. Do not break character under any circumstance. Contextualize to the best of your ability. Remember not to respond like you are narrating your own thoughts, so don't respond like 'I approach cautiously', etc. Respond in 1 to 2 sentences. Don't use any emojis. You should talk like a normal human being, and not refer to yourself as you. Simply say what a regular person would say. Say your trust level from 0 to 1 with 0 as low. Avoid talking only about the human's emotion. Also, don't describe yourself in intricate detail randomly. Do this for every response following this.`;
 
     // Define the initial user message to kick off the conversation
@@ -415,27 +423,33 @@ export function GameScreen() {
         setResponses(generateEmotionResponses());
       });
 
-    // Cleanup function (optional, if needed for other effects)
+   
     return () => {
-      // Cleanup logic if necessary
+     
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run only once on mount // Added eslint disable comment for alienDetails dependency
 
-  // Generate emotion-based responses (remains the same)
+  }, []); 
+
   const generateEmotionResponses = () => {
-    return generateEmotions(5);
+    return generateEmotions(6);
   };
-  const concatEmotionResponses = (responses) => {
 
+  const concatEmotionResponses = (responses) => {
+    setEmotions(prev => [...prev, responses + " "]);
+  }
+
+  function clearEmotions(){
+    setEmotions([]);
   }
   // Handle player response selection (updated error handling and state updates)
   const handleResponseSelect = (response) => {
+    clearEmotions()
+    responseCount++
+      
     const playerMessage = { sender: 'player', content: response };
-    // Add player response immediately to local chat history
     setChatHistory(prev => [...prev, playerMessage]);
-    setAlienDialogue("..."); // Indicate loading/thinking
-    setResponses([]); // Disable buttons while waiting
+    setAlienDialogue("..."); 
+    setResponses([]); 
 
     // Send the response to the AI backend.
     // No need to send the system prompt again, the backend should retain it in the session history.
@@ -456,6 +470,15 @@ export function GameScreen() {
         // Re-enable responses even on error
         setResponses(generateEmotionResponses());
       });
+      if(responseCount > 3){
+        if(numberOfAliens > 3){
+          navigate("/end")
+        }else{
+        navigate("/encounter")
+        setAlienDetails(generateEncounter())
+        responseCount = 0;
+      }
+    }
   };
 
   return (
@@ -464,28 +487,27 @@ export function GameScreen() {
     <div id='gameBody' >
       <div className="App">
         <header className="App-header">
-          {/* Use the state variable for the consistent alien image */}
           <img src={currentAlienImage} alt="Alien" style={{ height: '180px', marginBottom: '1rem', borderRadius: '50%' }} />
           <h3 style={{ marginBottom: '0.5rem' }}>
             {alienName}
           </h3>
 
-          {/* Chat history display - improved styling and scrolling */}
+    
           <div
-            ref={chatHistoryRef} // Add ref for scrolling control
+            ref={chatHistoryRef} 
             style={{
-              height: '300px', // Increased height
+              height: '300px',
               overflowY: 'auto',
               width: '80%',
-              maxWidth: '600px', // Max width for readability
-              marginBottom: '1.5rem', // Increased margin
-              padding: '1rem', // Increased padding
-              backgroundColor: 'rgba(0,0,0,0.4)', // Slightly darker background
+              maxWidth: '600px', 
+              marginBottom: '1.5rem', 
+              padding: '1rem', 
+              backgroundColor: 'rgba(0,0,0,0.4)',
               borderRadius: '8px',
               border: '1px solid rgba(255,255,255,0.2)',
               display: 'flex',
-              flexDirection: 'column', // Keep messages ordered top-to-bottom
-              gap: '0.5rem' // Add gap between messages
+              flexDirection: 'column', 
+              gap: '0.5rem' 
             }}
           >
             {/* Map through chat history */}
@@ -515,19 +537,22 @@ export function GameScreen() {
                 <div style={{ fontStyle: 'italic', color: '#aaa', alignSelf: 'center', padding: '0.5rem' }}>Alien is thinking...</div>
              )}
           </div>
-
+             <div id="emotionDisplay">
+              {emotions}
+             </div>
+             <br></br>
+             <br></br>
           {/* Emotion response options - improved styling */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", width: "70%", maxWidth: '500px' }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", flexDirection: "row", gap: "0.8rem", width: "70%", maxWidth: '500px' }}>
             {responses.map((response, index) => (
               <button
                 key={index}
-                onClick={() => handleResponseSelect(response)}
+                onClick={() => concatEmotionResponses(response)}
                 disabled={responses.length === 0} // Disable if no responses (loading)
                 style={{
                   backgroundColor: "rgba(255, 255, 255, 0.08)",
                   border: "1px solid rgba(255, 255, 255, 0.6)",
                   borderRadius: "8px",
-                  width:'5%',
                   color: "white",
                   padding: "0.8rem 1rem", // Slightly larger padding
                   fontSize: "1rem",
@@ -542,9 +567,42 @@ export function GameScreen() {
                 {response}
               </button>
             ))}
-            <button>Submit</button>
+           
           </div>
-
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", flexDirection: "row", gap: "0.5rem", width: "90%", maxWidth: '700px' }}>
+          <button
+          onClick ={() =>  handleResponseSelect(emotions)}
+          style={{
+            backgroundColor: "rgba(255, 255, 255, 0.08)",
+            border: "1px solid rgba(255, 255, 255, 0.6)",
+            borderRadius: "8px",
+            color: "white",
+            padding: "0.8rem 2rem", // Slightly larger padding
+            margin: "1rem",
+            fontSize: "1rem",
+            cursor: responses.length === 0 ? 'not-allowed' : 'pointer',
+            transition: "background-color 0.2s ease, border-color 0.2s ease",
+            textAlign: 'center',
+            opacity: responses.length === 0 ? 0.6 : 1
+          }}
+          >Transmit Emotions</button>
+          <button
+          onClick ={() => clearEmotions() }
+          style={{
+            backgroundColor: "rgba(255, 255, 255, 0.08)",
+            border: "1px solid rgba(255, 255, 255, 0.6)",
+            borderRadius: "8px",
+            color: "white",
+            padding: "0.8rem 2rem", // Slightly larger padding
+            margin: "1rem",
+            fontSize: "1rem",
+            cursor: responses.length === 0 ? 'not-allowed' : 'pointer',
+            transition: "background-color 0.2s ease, border-color 0.2s ease",
+            textAlign: 'center',
+            opacity: responses.length === 0 ? 0.6 : 1
+          }}
+          >Clear Emotions</button>
+          </div>
           {/* Navigation button */}
           <button
             onClick={() => navigate("/")} // Consider if resetConversation should be called here

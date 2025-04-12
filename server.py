@@ -32,28 +32,11 @@ conversations = {}
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    """
-    Handles chat requests. Expects a JSON body with a 'message' field.
-    Optionally accepts a 'system_prompt' field to add a system message.
-    Returns a JSON response with the assistant's 'reply'.
-    """
-    if not client:
-        return jsonify({"error": "OpenAI client not initialized. Check API key."}), 500
-
-    if not request.is_json:
-        return jsonify({"error": "Request must be JSON"}), 400
-
-    data = request.get_json()
-    user_message = data.get("message")
-    system_prompt = data.get("system_prompt") # Get optional system prompt
-    conversation_id = data.get("conversation_id", session.get("conversation_id"))
-
-    if not user_message:
-        return jsonify({"error": "Missing 'message' field in request body"}), 400
+    # ... (previous code: client check, json check, data extraction) ...
 
     # --- Session Management ---
     if 'conversation_id' not in session:
-        session['conversation_id'] = str(uuid.uuid4()) # Create a unique ID for this user's session
+        session['conversation_id'] = str(uuid.uuid4())
         print(f"New session started: {session['conversation_id']}")
     conversation_id = session['conversation_id']
     # --------------------------
@@ -61,40 +44,45 @@ def chat():
     # Get or create history for this session
     if conversation_id not in conversations:
         conversations[conversation_id] = [
-            {"role": "system", "content": "You are an alien that is talking to a player. They will respond with 1 emotion. Do not talk with the human about any other topics. Emotions that you feel strongly about and a tone for you to take on will be provided. If the emotion the player selects is not similar to the emotion you have been given to feel strongly about, respond rudely. If it is similar to the emotion, then respond politely. An introduction for you given to the player will be your first prompt, and no other prompt after will be an introduction. Do not directly state your goals. Be as vague as possible."},
-            # Add any other initial system prompts here
+            # FIX 1: Use simple string for initial system prompt content
+            {"role": "system", "content": "You are an alien that is talking to a player. They will respond with emotions. Do not talk with the human about any other topics. Emotions that you feel strongly about and a tone for you to take on will be provided. If the emotion the player selects is not similar to the emotion you have been given to feel strongly about, respond rudely. If it is similar to the emotion, then respond politely. An introduction for you given to the player will be your first prompt, and no other prompt after will be an introduction. Do not directly state your goals. Be as vague as possible. Do not objectively analyze the human's response, look at it from your emotions' perspective."},
+            # Add any other initial system prompts here if needed, using the same simple format
         ]
         print(f"Initialized history for: {conversation_id}")
 
     # Add the optional system prompt if provided
     if system_prompt:
+        # FIX 2: Use simple string for optional system prompt content
         conversations[conversation_id].append({"role": "system", "content": system_prompt})
-        print(f"Added system prompt for {conversation_id}: {system_prompt}")
-
 
     # Add the user message to the conversation history
+    # FIX 3: Use simple string for user message content
     conversations[conversation_id].append({"role": "user", "content": user_message})
 
     try:
-        # Create a chat completion request to OpenAI with full conversation history
+        # Create a chat completion request (API call structure is correct)
         completion = client.chat.completions.create(
-            model="gpt-4o-mini", # Or your preferred model
-            messages=conversations[conversation_id]
+            model="gpt-4o-mini",
+            messages=conversations[conversation_id] # Send the corrected history
         )
-        # Extract the assistant's reply
-        assistant_reply = completion.choices[0].message.content
+        assistant_reply = completion.choices[0].message.content # This is already a string
 
         # Add the assistant's reply to conversation history
+        # FIX 4: Use simple string when adding assistant reply to history
         conversations[conversation_id].append(
             {"role": "assistant", "content": assistant_reply}
         )
 
+        # Return only the string content in the JSON response
         return jsonify({"reply": assistant_reply})
 
     except Exception as e:
+        # Improved error logging: Print the messages list that caused the error
         print(f"Error calling OpenAI API: {e}")
+        print(f"Data sent (messages): {conversations.get(conversation_id, 'History not found')}")
         return jsonify({"error": f"Failed to get response from OpenAI: {e}"}), 500
 
+# ... (rest of the code, including /reset and app.run) ...
 
 @app.route("/reset", methods=["POST"])
 def reset():

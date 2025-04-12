@@ -104,12 +104,15 @@ function getFallbackResponse(message) {
     "Surprised": ["The alien tilts its head, intrigued by your surprise.", "The alien mimics your surprised expression."],
     "Confused": ["The alien points to various objects, trying to help.", "The alien shows a diagram on a small device."],
     "Excited": ["The alien bounces slightly, matching your excitement.", "The alien makes a cheerful sound."]
+
   };
 
   // Check if message contains any emotion keywords
   for (const [emotion, responses] of Object.entries(emotions)) {
     if (message.includes(emotion)) {
       return responses[Math.floor(Math.random() * responses.length)];
+    } else {
+      return "The alien seems indifferent to your feelings.";
     }
   }
 
