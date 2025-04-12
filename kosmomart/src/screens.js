@@ -12,7 +12,7 @@ import {
 import "./screens.css";
 import { gsap } from "gsap";
 import { TextPlugin } from "gsap/TextPlugin";
-import { generateEncounter, generateEncounter2 } from "./alienframework";
+import { generateEncounter} from "./alienframework";
 import { SatAnimation } from "./helper";
 gsap.registerPlugin(TextPlugin);
 
@@ -66,37 +66,38 @@ export function StartScreen() {
 }
 
 export function SecondScreen() {
-  const fullText =
-    "Humanity has been ravaged by WW3, and in a last ditch effort to save themselves, they looked to the stars for guidance. They sent you, a fledging astronaut, to find help.\n Unfortunately, you used chatgpt to write your application essay, and thus, no nothing about flying a spaceship or intergalatic diplomacy.\n .";
+  const sentences = [
+    "Humanity has been ravaged by WW3, and in a last ditch effort to save themselves, they looked to the stars for guidance.",
+    "They sent you, a fledgling astronaut, to find help.",
+    "Unfortunately, you used chatgpt to write your application essay, and thus, know nothing about flying a spaceship or intergalactic diplomacy.",
+    "With no fuel in the tank, and no money in your pocket, you land at the most famous crossroads in all of space: The KosmoMart convenience store."
+  ];
+
   const navigate = useNavigate();
   const textRef = useRef(null);
 
   useEffect(() => {
     if (textRef.current) {
-      const timeline = gsap.timeline({ repeat: -1 });
+      const tl = gsap.timeline({ repeat: -1 });
 
-      timeline
-        .to(textRef.current, {
-          duration: 5,
-          text: {
-            value: fullText,
-            delimiter: "",
-          },
+      sentences.forEach((sentence) => {
+        tl.to(textRef.current, {
+          duration: sentence.length * 0.03,
+          text: { value: sentence, delimiter: "" },
           ease: "none",
         })
         .to(textRef.current, {
-          duration: 1.5,
-          opacity: 1,
-          ease: "power2.inOut",
+          duration: 1,
+          delay: 0.5,
         })
         .to(textRef.current, {
-          duration: 2,
-          opacity: 0.7,
-          ease: "power2.inOut",
-          delay: 2,
+          duration: sentence.length * 0.015,
+          text: { value: "", delimiter: "" },
+          ease: "none"
         });
+      });
 
-      return () => timeline.kill();
+      return () => tl.kill();
     }
   }, []);
 
@@ -137,19 +138,69 @@ export function TutorialScreen() {
         { opacity: 1, y: 0, duration: 1.2, ease: "power2.out" }
       );
 
-      // Animate terminal text
-      gsap.to(terminalTextRef.current, {
-        duration: 2,
-        text: { value: "TERMINAL READY >> AWAITING COMMANDS", delimiter: "" },
-        ease: "steps(30)",
-        repeat: -1,
-        repeatDelay: 1,
-        yoyo: true,
-      });
-
+     
       // Timeline for typing "PROCEED ?"
       typingTimeline = gsap.timeline();
       typingTimeline
+      .to(terminalTextRef.current, {
+        duration: 4,
+        text: { value: "TERMINAL READY >> INITIATING LINK ", delimiter: "" },
+        ease: "steps(40)",
+      })
+      .to(terminalTextRef.current, {
+        duration: 2,
+        text: { value: "", delimiter: "" },
+        ease: "steps(30)",
+        delay: 2,
+      })
+      .to(terminalTextRef.current, {
+        duration: 7,
+        text: { value: " \nP1L0T come in...The following debrief has been cleared for comms. ", delimiter: "" },
+        ease: "steps(40)",
+ 
+    
+      })
+      .to(terminalTextRef.current, {
+        duration: 2,
+        text: { value: "", delimiter: "" },
+        ease: "steps(30)",
+        delay: 2,
+      })
+      .to(terminalTextRef.current, {
+        duration: 4,
+        text: { value: "Upon traveling the stars, you will encounter alien species. Due to your helmet's translation limitations, alien names will be simplified into potential nonsensical english.", delimiter: "" },
+        ease: "steps(30)",
+
+      })
+      .to(terminalTextRef.current, {
+        duration: 2,
+        text: { value: "", delimiter: "" },
+        ease: "steps(30)",
+        delay: 4,
+      })
+      .to(terminalTextRef.current, {
+        duration: 4,
+        text: { value: "Additionally, your helmet does not contain human to extraterrestial translation. There are other ways to communicate.", delimiter: "" },
+        ease: "steps(30)",
+      })
+      .to(terminalTextRef.current, {
+        duration: 2,
+        text: { value:  "", delimiter: "" },
+        ease: "steps(30)",
+        delay: 3,
+      })
+      .to(terminalTextRef.current, {
+        duration: 4,
+        text: { value: "Remember, P1L0T, complete the mission. At all costs.", delimiter: "" },
+        ease: "steps(30)",
+        repeat: -1,
+        repeatDelay: 10,
+      })
+
+
+
+      
+      
         .to(proceedTextRef.current, {
           duration: 1, // Duration for "PROCEED "
           text: { value: "PROCEED", delimiter: "" },
@@ -203,6 +254,8 @@ export function TutorialScreen() {
     <div className="App">
       <header className="App-header">
         <SatAnimation />
+        <br />
+        <br />
         <h2 id="titleCss" ref={titleRef}>
           Mission Control
         </h2>
@@ -237,15 +290,43 @@ export function TutorialScreen() {
   );
 }
 
-// Add EncounterScreen placeholder if it doesn't exist
 export function EncounterScreen() {
+  const navigate = useNavigate();
+  const alienName = generateEncounter().replace("_", " ") + " ";
+
+  return (
+    <div className="App">
+      <header className="App-header">
+        <h2>
+          A {alienName}stops a few meters from your viewport.
+        </h2>
+        <br />
+        <button
+          onClick={() => navigate("/game")}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "inherit",
+            fontSize: "1.1rem",
+            cursor: "pointer",
+            marginTop: "20px",
+          }}
+        >
+          <code className="animated-text">Continue</code>
+        </button>
+      </header>
+    </div>
+  );
+}
+
+export function GameScreen() {
   // Placeholder content for the next screen
   const navigate = useNavigate();
   return (
     <div className="App">
       <header className="App-header">
         <h2>
-          A {generateEncounter2().replace("_", " ") + " "} 
+          A {generateEncounter().replace("_", " ") + " "} 
            stops a few meters from your viewport.
         </h2>{" "}
         {/* Add encounter logic here */}

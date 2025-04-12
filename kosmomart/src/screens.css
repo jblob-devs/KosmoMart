@@ -69,5 +69,7 @@ titleCss{
 
 #satImage{
     height: auto;
-    width: 30%;
+    width: 20%;
+    position: relative;
+    top: 20%;
 }

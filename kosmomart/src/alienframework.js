@@ -1,36 +1,22 @@
 import {
-  uniqueUsernameGenerator,
-  Config,
-  adjectives,
-  nouns,
-} from "unique-username-generator";
-
-const {
   uniqueNamesGenerator,
+  adjectives,
   animals,
-  starWars,
-  names,
-} = require("unique-names-generator");
-
+} from "unique-names-generator";
 
 
 const config = {
   dictionaries: [adjectives],
 };
 
-const randAlienName = uniqueNamesGenerator({
-  dictionaries: [adjectives, animals],
-  length: 2,
-});
-
-export function generateEncounter() {
-  return randAlienName;
+function generateName(){
+  return uniqueNamesGenerator({
+    dictionaries: [adjectives, adjectives, animals],
+    separator: ' ',
+    style: 'capital',
+  });
 }
 
-export function generateEncounter2() {
-  const username = uniqueUsernameGenerator(config);
-  return username + " " + uniqueNamesGenerator({
-    dictionaries: [names],
-    length: 1,
-  });
+export function generateEncounter() {
+  return generateName()
 }
