@@ -39,9 +39,9 @@ def chat():
     try:
         # Create a chat completion request to OpenAI
         completion = client.chat.completions.create(
-            model="gpt-3.5-turbo", # Or use "gpt-4" if you have access
+            model="gpt-4o-mini", # Or use "gpt-4" if you have access
             messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "system", "content": "You are an alien that is talking to a player. They will respond with 2+ emotions. Have a random tone. Do not talk with the human about any other topics. Give me emotions that you feel strongly positively and negatively about. An introduction for you given to the player will be your first prompt. Additionally, give me your opening statement. Output this in JSON. Do not directly state your goals. Be as vague as possible."},
                 {"role": "user", "content": user_message}
             ]
         )
